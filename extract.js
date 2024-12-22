@@ -12,7 +12,10 @@ const processUrl = async (url) => {
         return cachedData;
     }
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser',
+        args: ["--no-sandbox", "--disabled-setupid-sandbox"],
+    });
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(60000);
 
