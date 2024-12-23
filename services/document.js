@@ -259,6 +259,82 @@ class DocumentService {
         
         return filename;
     }
+
+    async generateMultipleContents(contents) {
+        const children = contents.flatMap((content, index) => [
+            // Version separator
+            new docx.Paragraph({
+                children: [
+                    new docx.TextRun({
+                        text: `Phiên bản ${index + 1}`,
+                        bold: true,
+                        size: 32,
+                        color: '7B2CBF'
+                    })
+                ],
+                spacing: { before: 400, after: 200 },
+                pageBreakBefore: true,
+                border: {
+                    bottom: { style: 'single', size: 10, color: '7B2CBF' }
+                }
+            }),
+            // Content section
+            new docx.Paragraph({
+                children: [
+                    new docx.TextRun({
+                        text: content,
+                        size: 24,
+                        font: 'Arial'
+                    })
+                ],
+                spacing: { 
+                    after: 240,
+                    line: 360,
+                    lineRule: docx.LineRuleType.AUTO
+                },
+                alignment: docx.AlignmentType.JUSTIFIED
+            })
+        ]);
+
+        const doc = new docx.Document({
+            styles: {
+                paragraphStyles: [
+                    {
+                        id: "Normal",
+                        name: "Normal",
+                        run: {
+                            font: "Arial",
+                            size: 24
+                        },
+                        paragraph: {
+                            spacing: { line: 360 }
+                        }
+                    }
+                ]
+            },
+            sections: [{
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1440,
+                            bottom: 1440,
+                            left: 1440,
+                            right: 1440
+                        }
+                    }
+                },
+                children: children
+            }]
+        });
+
+        const filename = `${uuidv4()}.docx`;
+        const filepath = path.join(this.documentsDir, filename);
+        
+        const buffer = await docx.Packer.toBuffer(doc);
+        fs.writeFileSync(filepath, buffer);
+        
+        return filename;
+    }
 }
 
 module.exports = DocumentService;

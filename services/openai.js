@@ -3,6 +3,8 @@ const OpenAI = require('openai');
 class OpenAIService {
     constructor(apiKey) {
         this.openai = new OpenAI({ apiKey });
+        this.requestCount = 0;
+        this.lastRequestTime = Date.now();
     }
 
     async generateVideoContent(outline) {
@@ -153,6 +155,61 @@ class OpenAIService {
         } catch (error) {
             console.error('Error generating SEO content:', error);
             throw new Error('Failed to generate SEO content');
+        }
+    }
+
+    async generateCustomContent(outline, customPrompt) {
+        // Add delay if too many requests
+        await this.handleRateLimit();
+        
+        const formattedOutline = this.formatOutlineForPrompt(outline);
+
+        try {
+            const completion = await this.openai.chat.completions.create({
+                model: "gpt-4",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
+                            Hãy tạo nội dung dựa trên yêu cầu của người dùng.
+                            Đảm bảo nội dung chất lượng, mạch lạc và dễ hiểu.
+                            Độ dài tối thiểu 1000 từ. Ngôn ngữ tương ứng với prompt.` 
+                    },
+                    { 
+                        role: "user", 
+                        content: `${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 4000,
+                presence_penalty: 0.1,
+                frequency_penalty: 0.1
+            });
+
+            this.requestCount++;
+            this.lastRequestTime = Date.now();
+            return completion.choices[0].message.content;
+        } catch (error) {
+            if (error.response?.status === 429) { // Rate limit error
+                console.log('Rate limit reached, retrying after delay...');
+                await new Promise(resolve => setTimeout(resolve, 20000)); // Wait 20s
+                return this.generateCustomContent(outline, customPrompt);
+            }
+            throw error;
+        }
+    }
+
+    async handleRateLimit() {
+        // Reset counter after 1 minute
+        if (Date.now() - this.lastRequestTime > 60000) {
+            this.requestCount = 0;
+        }
+
+        // Add delay if making too many requests
+        if (this.requestCount > 3) { // Adjust this number based on your API limits
+            const delay = Math.min(this.requestCount * 1000, 10000); // Max 10s delay
+            console.log(`Adding ${delay}ms delay for rate limiting...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 

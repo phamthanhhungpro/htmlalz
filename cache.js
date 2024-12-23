@@ -1,5 +1,5 @@
 class Cache {
-    constructor(ttl = 3600000) { // default TTL: 1 hour in milliseconds
+    constructor(ttl = 300000) { // default TTL:5mins in milliseconds
         this.cache = new Map();
         this.ttl = ttl;
     }
