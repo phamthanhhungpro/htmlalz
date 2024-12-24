@@ -32,7 +32,6 @@ app.post('/api/extract', async (req, res) => {
 
 app.post('/api/generate-video-content', async (req, res) => {
     try {
-        logger.info('/api/generate-video-content', { outline: req.body.outline });
         const { apiKey, outline } = req.body;
         
         if (!apiKey) {
@@ -62,7 +61,6 @@ app.post('/api/generate-video-content', async (req, res) => {
 
 app.post('/api/generate-seo-content', async (req, res) => {
     try {
-        logger.info('/api/generate-seo-content', { outline: req.body.outline });
         const { apiKey, outline } = req.body;
         
         if (!apiKey) {
@@ -92,11 +90,6 @@ app.post('/api/generate-seo-content', async (req, res) => {
 
 app.post('/api/run-prompt', async (req, res) => {
     try {
-        logger.info('/api/run-prompt', { 
-            outline: req.body.outline,
-            count: req.body.count,
-            promptLength: req.body.prompt?.length
-        });
 
         const { apiKey, outline, prompt, count = 1 } = req.body;
         if (!apiKey) {
@@ -141,6 +134,33 @@ app.post('/api/run-prompt', async (req, res) => {
     } catch (error) {
         logger.error('/api/run-prompt', error);
         console.error('Error generating custom content:', error);
+        res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+});
+
+app.post('/api/analyze-outlines', async (req, res) => {
+    try {
+        const { apiKey, outlines, count = 1 } = req.body;
+        
+        if (!apiKey) {
+            return res.status(400).json({ error: 'OpenAI API key is required' });
+        }
+
+        if (!outlines || !Array.isArray(outlines) || outlines.length === 0) {
+            return res.status(400).json({ error: 'Valid outlines array is required' });
+        }
+
+        if (count > outlines.length) {
+            return res.status(400).json({ error: 'Requested count exceeds available outlines' });
+        }
+
+        const openaiService = new OpenAIService(apiKey);
+        const result = await openaiService.analyzeAndSelectOutlines(outlines, count);
+        
+        logger.info('/api/analyze-outlines', { success: true, selectedCount: result.selectedOutlines.length });
+        res.json(result.selectedOutlines);
+    } catch (error) {
+        logger.error('/api/analyze-outlines', error);
         res.status(500).json({ error: error.message || 'Internal server error' });
     }
 });

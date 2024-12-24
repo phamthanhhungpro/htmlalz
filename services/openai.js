@@ -147,6 +147,7 @@ class OpenAIService {
                             - Chất lượng cao, mạch lạc và dễ hiểu
                             - Đúng ngôn ngữ trong prompt
                             - Phân chia các phần logic và rõ ràng
+                            - Đánh lại số thứ tự các phần nếu cần thiết
                             
                             Prompt từ người dùng:
                             ${customPrompt}
@@ -180,6 +181,52 @@ class OpenAIService {
                 return this.generateCustomContent(outline, customPrompt);
             }
             throw error;
+        }
+    }
+
+    async analyzeAndSelectOutlines(outlines, count) {
+        const formatForAnalysis = outlines.map((outline, index) => ({
+            index,
+            content: this.formatOutlineForPrompt([outline])
+        }));
+
+        try {
+            const completion = await this.openai.chat.completions.create({
+                model: "gpt-4",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Bạn là chuyên gia phân tích dàn ý nội dung.
+                            Nhiệm vụ: Phân tích và chọn ${count} dàn ý TỐT NHẤT dựa trên:
+                            1. Tính logic và mạch lạc
+                            2. Độ bao quát của nội dung
+                            3. Tính thực tiễn và giá trị
+                            4. Tiềm năng phát triển nội dung
+                            
+                            Yêu cầu: Chỉ trả về mảng các số thứ tự (index) của các dàn ý được chọn.
+                            Format: [0, 2, 3] (ví dụ cho 3 dàn ý được chọn)`
+                    },
+                    { 
+                        role: "user", 
+                        content: `Phân tích và chọn ${count} dàn ý tốt nhất từ danh sách sau:\n\n` +
+                            formatForAnalysis.map(item => 
+                                `[${item.index}]:\n${item.content}\n---\n`
+                            ).join('\n')
+                    }
+                ],
+                temperature: 0.3
+            });
+
+            const selectedIndexes = JSON.parse(completion.choices[0].message.content);
+            
+            return {
+                selectedOutlines: selectedIndexes.map(index => outlines[index]),
+                originalOutlines: outlines
+            };
+
+        } catch (error) {
+            console.error('Error analyzing outlines:', error);
+            throw new Error('Failed to analyze outlines');
         }
     }
 
