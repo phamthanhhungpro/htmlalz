@@ -23,7 +23,9 @@ class DocumentService {
     }
 
     async generateDocument(content, type = 'video') {
-        return this.generateSEODocument(content);
+        // return this.generateSEODocument(content);
+
+        return this.generateMultipleContents([content]);
     }
 
     async generateVideoDocument(content) {
@@ -189,7 +191,7 @@ class DocumentService {
             new docx.Paragraph({
                 children: [
                     new docx.TextRun({
-                        text: "NỘI DUNG BÀI VIẾT SEO",
+                        text: "NỘI DUNG BÀI VIẾT THEO DÀN Ý",
                         bold: true,
                         size: 32,
                         color: '7B2CBF'
