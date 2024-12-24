@@ -8,6 +8,10 @@ class OpenAIService {
     }
 
     async generateVideoContent(outline) {
+        const userPrompt = `Tạo nội dung SEO chuẩn cho bài viết với dàn ý sau, tối thiểu 6000 từ. 
+        Viết lại nội dung theo cách mạch lạc, dễ hiểu và chuyên sâu nhất có thể.
+        Đánh lại số thứ tự các phần nếu cần thiết.`;
+
         const systemPrompt = `Bạn là một người viết kịch bản video chuyên nghiệp, chuyên tạo nội dung bằng tiếng Việt.
             Hãy chuyển đổi dàn ý sau thành một kịch bản video THẬT CHI TIẾT và hấp dẫn.
 
@@ -54,7 +58,7 @@ class OpenAIService {
                 messages: [
                     { 
                         role: "user", 
-                        content: `${systemPrompt}:\n Dàn ý: ${formattedOutline}` 
+                        content: `${systemPrompt}:\n Prompt từ người dùng: ${userPrompt} \n Dàn ý: ${formattedOutline}` 
                     }
                 ],
                 max_completion_tokens: 24000
@@ -69,7 +73,9 @@ class OpenAIService {
 
     async generateSEOContent(outline) {
         const formattedOutline = this.formatOutlineForPrompt(outline);
-
+        const userPrompt = `Tạo nội dung SEO chuẩn cho bài viết với dàn ý sau, tối thiểu 4000 từ. 
+                            Viết lại nội dung theo cách mạch lạc, dễ hiểu và chuyên sâu nhất có thể.
+                            Đánh lại số thứ tự các phần nếu cần thiết.`;
         try {
             const completion = await this.openai.chat.completions.create({
                 model: "o1-preview",
@@ -77,7 +83,7 @@ class OpenAIService {
                     { 
                         role: "user", 
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
-                            Hãy tạo nội dung bài viết chi tiết chuẩn SEO theo yêu dàn ý và cầu dưới đây.
+                            Hãy tạo nội dung theo yêu cầu dưới đây.
                             
                             Yêu cầu về format:
                             1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
@@ -87,12 +93,13 @@ class OpenAIService {
                             5. Đảm bảo các phần được phân tách rõ ràng
                             
                             Yêu cầu về nội dung:
-                            - Nội dung tối thiểu 4000 từ
-                            - Đánh số thứ tự lại cho các phần chính
                             - Chất lượng cao, mạch lạc và dễ hiểu
                             - Đúng ngôn ngữ trong prompt
                             - Phân chia các phần logic và rõ ràng
-                            
+
+                            Prompt từ người dùng:
+                            ${userPrompt}
+
                             Dàn ý chi tiết:
                             ${formattedOutline}` 
                     }
