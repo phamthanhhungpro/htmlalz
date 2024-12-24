@@ -23,9 +23,7 @@ class DocumentService {
     }
 
     async generateDocument(content, type = 'video') {
-        return type === 'seo' ? 
-            this.generateSEODocument(content) : 
-            this.generateVideoDocument(content);
+        return this.generateSEODocument(content);
     }
 
     async generateVideoDocument(content) {

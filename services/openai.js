@@ -9,46 +9,8 @@ class OpenAIService {
 
     async generateVideoContent(outline) {
         const userPrompt = `Tạo nội dung SEO chuẩn cho bài viết với dàn ý sau, tối thiểu 6000 từ. 
-        Viết lại nội dung theo cách mạch lạc, dễ hiểu và chuyên sâu nhất có thể.
-        Đánh lại số thứ tự các phần nếu cần thiết.`;
-
-        const systemPrompt = `Bạn là một người viết kịch bản video chuyên nghiệp, chuyên tạo nội dung bằng tiếng Việt.
-            Hãy chuyển đổi dàn ý sau thành một kịch bản video THẬT CHI TIẾT và hấp dẫn.
-
-            Cho mỗi chủ đề chính:
-            1. Tạo phần mở đầu thu hút (tối thiểu 100 từ), giới thiệu vấn đề
-            2. Phát triển mỗi ý chính với ít nhất 3-4 ví dụ cụ thể và thực tế
-            3. Thêm các câu chuyển tiếp tự nhiên giữa các phần
-            4. Phân tích sâu và giải thích kỹ mỗi khía cạnh
-            5. Thêm các dẫn chứng, nghiên cứu, số liệu thống kê nếu có
-            6. Kết luận đầy đủ và sâu sắc cho mỗi phần chính
-
-            Yêu cầu chi tiết:
-            - Bài viết tối thiếu 5000 từ
-            - Sử dụng ngôn ngữ đối thoại, dễ hiểu nhưng chuyên sâu
-            - Thêm nhiều ví dụ thực tế, câu chuyện minh họa
-            - Đảm bảo nội dung mạch lạc và có tính liên kết cao
-            - Giọng điệu thân thiện, gần gũi nhưng chuyên nghiệp
-            - Phát triển ý tưởng theo hướng phân tích - lý giải - đề xuất
-            - Mỗi luận điểm cần có dẫn chứng cụ thể
-            
-            Format kịch bản:
-            [Phần mở đầu]
-            - Câu mở đầu ấn tượng
-            - Giới thiệu tổng quan chủ đề
-            - Tại sao chủ đề này quan trọng
-            - Những vấn đề sẽ được đề cập
-
-            [Nội dung chi tiết từng phần]
-            - Phân tích chuyên sâu
-            - Ví dụ minh họa
-            - Dẫn chứng thực tế
-            - Bài học rút ra
-
-            [Phần kết thúc]
-            - Tổng kết các điểm chính
-            - Bài học và giá trị thực tiễn
-            - Lời kết ấn tượng`;
+                            Hãy chuyển đổi dàn ý sau thành một kịch bản video THẬT CHI TIẾT và hấp dẫn.
+                            Đánh lại số thứ tự các phần nếu cần thiết.`;
 
         const formattedOutline = this.formatOutlineForPrompt(outline);
 
@@ -58,13 +20,44 @@ class OpenAIService {
                 messages: [
                     { 
                         role: "user", 
-                        content: `${systemPrompt}:\n Prompt từ người dùng: ${userPrompt} \n Dàn ý: ${formattedOutline}` 
+                        content: `Bạn là một người viết kịch bản video chuyên nghiệp. 
+                                 Hãy tạo nội dung theo yêu cầu dưới đây.
+                            
+                            Yêu cầu về format:
+                            1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
+                            2. Sử dụng dấu xuống dòng (\n) trong danh sách (bullets)
+                            3. Tiêu đề phải cách nội dung 1 dòng
+                            4. Phần mới phải cách phần cũ 2 dòng
+                            5. Đảm bảo các phần được phân tách rõ ràng
+                            
+                            Yêu cầu về nội dung:
+                            - Chất lượng cao, mạch lạc và dễ hiểu
+                            - Đúng ngôn ngữ trong prompt
+                            - Phân chia các phần logic và rõ ràng
+
+                            Prompt từ người dùng:
+                            ${userPrompt}
+
+                            Dàn ý chi tiết:
+                            ${formattedOutline}` 
                     }
                 ],
                 max_completion_tokens: 24000
             });
+            // Format lại output để đảm bảo xuống dòng đúng
+            let content = completion.choices[0].message.content;
+            
+            // Đảm bảo xuống dòng sau tiêu đề
+            content = content.replace(/^(#+ .+)$/gm, '$1\n');
+            
+            // Đảm bảo 2 dòng trống giữa các phần
+            content = content.replace(/\n{3,}/g, '\n\n');
+            
+            // Đảm bảo bullets được xuống dòng đúng
+            content = content.replace(/^[•\-\*] (.+)$/gm, '\n• $1');
 
-            return completion.choices[0].message.content.trim();
+            return content;
+            
         } catch (error) {
             console.error('Error generating video content:', error);
             throw new Error('Failed to generate video content');
