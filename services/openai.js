@@ -179,7 +179,7 @@ class OpenAIService {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 24000,
+                max_completion_tokens: 24000,
                 presence_penalty: 0.1,
                 frequency_penalty: 0.1
             });
