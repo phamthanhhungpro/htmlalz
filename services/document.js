@@ -261,6 +261,69 @@ class DocumentService {
     }
 
     async generateMultipleContents(contents) {
+        // Format và xử lý từng phần nội dung
+        const processContent = (content) => {
+            // Tách các phần bằng 2 dòng trống trở lên
+            const sections = content.split(/\n{2,}/);
+            
+            return sections.flatMap(section => {
+                const trimmedSection = section.trim();
+                if (!trimmedSection) return [];
+
+                // Xử lý heading (dòng bắt đầu bằng #)
+                if (trimmedSection.startsWith('#')) {
+                    return new docx.Paragraph({
+                        children: [
+                            new docx.TextRun({
+                                text: trimmedSection.replace(/^#+\s*/, ''),
+                                bold: true,
+                                size: 28,
+                                color: '2E74B5'
+                            })
+                        ],
+                        spacing: { before: 240, after: 120 }
+                    });
+                }
+
+                // Xử lý danh sách (bullet points)
+                if (trimmedSection.match(/^[•\-\*]/m)) {
+                    const listItems = trimmedSection.split(/\n/).filter(Boolean);
+                    return listItems.map(item => 
+                        new docx.Paragraph({
+                            children: [
+                                new docx.TextRun({
+                                    text: item.replace(/^[•\-\*]\s*/, ''),
+                                    size: 24
+                                })
+                            ],
+                            bullet: {
+                                level: 0
+                            },
+                            spacing: { before: 60, after: 60 }
+                        })
+                    );
+                }
+
+                // Đoạn văn bản thông thường
+                return new docx.Paragraph({
+                    children: [
+                        new docx.TextRun({
+                            text: trimmedSection,
+                            size: 24,
+                            font: 'Arial'
+                        })
+                    ],
+                    spacing: { 
+                        before: 120,
+                        after: 120,
+                        line: 360,
+                        lineRule: docx.LineRuleType.AUTO
+                    },
+                    alignment: docx.AlignmentType.JUSTIFIED
+                });
+            });
+        };
+
         const children = contents.flatMap((content, index) => [
             // Version separator
             new docx.Paragraph({
@@ -278,22 +341,8 @@ class DocumentService {
                     bottom: { style: 'single', size: 10, color: '7B2CBF' }
                 }
             }),
-            // Content section
-            new docx.Paragraph({
-                children: [
-                    new docx.TextRun({
-                        text: content,
-                        size: 24,
-                        font: 'Arial'
-                    })
-                ],
-                spacing: { 
-                    after: 240,
-                    line: 360,
-                    lineRule: docx.LineRuleType.AUTO
-                },
-                alignment: docx.AlignmentType.JUSTIFIED
-            })
+            // Process and format content sections
+            ...processContent(content)
         ]);
 
         const doc = new docx.Document({
@@ -307,7 +356,11 @@ class DocumentService {
                             size: 24
                         },
                         paragraph: {
-                            spacing: { line: 360 }
+                            spacing: { 
+                                line: 360,
+                                before: 120,
+                                after: 120
+                            }
                         }
                     }
                 ]
