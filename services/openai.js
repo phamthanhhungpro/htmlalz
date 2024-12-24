@@ -173,7 +173,7 @@ class OpenAIService {
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
                             Hãy tạo nội dung dựa trên yêu cầu của người dùng.
                             Đảm bảo nội dung chất lượng, mạch lạc và dễ hiểu.
-                            Độ dài tối thiểu 1000 từ. Ngôn ngữ tương ứng với prompt.` 
+                            Độ dài tối thiểu 3000 từ. Ngôn ngữ tương ứng với prompt.` 
                     },
                     { 
                         role: "user", 
@@ -181,7 +181,7 @@ class OpenAIService {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 16000,
+                max_tokens: 24000,
                 presence_penalty: 0.1,
                 frequency_penalty: 0.1
             });
