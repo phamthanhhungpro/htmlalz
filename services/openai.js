@@ -159,7 +159,6 @@ class OpenAIService {
     }
 
     async generateCustomContent(outline, customPrompt) {
-        // Add delay if too many requests
         await this.handleRateLimit();
         
         const formattedOutline = this.formatOutlineForPrompt(outline);
@@ -171,19 +170,45 @@ class OpenAIService {
                     { 
                         role: "user", 
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
-                            Hãy tạo nội dung dựa trên yêu cầu của người dùng.
-                            Đảm bảo nội dung chất lượng, mạch lạc và dễ hiểu.
-                            Ngôn ngữ tương ứng với prompt.
+                            Hãy tạo nội dung theo yêu cầu dưới đây.
                             
-                            ${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
+                            Yêu cầu về format:
+                            1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
+                            2. Sử dụng dấu xuống dòng (\n) trong danh sách (bullets)
+                            3. Tiêu đề phải cách nội dung 1 dòng
+                            4. Phần mới phải cách phần cũ 2 dòng
+                            5. Đảm bảo các phần được phân tách rõ ràng
+                            
+                            Yêu cầu về nội dung:
+                            - Chất lượng cao, mạch lạc và dễ hiểu
+                            - Đúng ngôn ngữ trong prompt
+                            - Phân chia các phần logic và rõ ràng
+                            
+                            Prompt từ người dùng:
+                            ${customPrompt}
+                            
+                            Dàn ý chi tiết:
+                            ${formattedOutline}` 
                     }
                 ],
                 max_completion_tokens: 24000
             });
 
+            // Format lại output để đảm bảo xuống dòng đúng
+            let content = completion.choices[0].message.content;
+            
+            // Đảm bảo xuống dòng sau tiêu đề
+            content = content.replace(/^(#+ .+)$/gm, '$1\n');
+            
+            // Đảm bảo 2 dòng trống giữa các phần
+            content = content.replace(/\n{3,}/g, '\n\n');
+            
+            // Đảm bảo bullets được xuống dòng đúng
+            content = content.replace(/^[•\-\*] (.+)$/gm, '\n• $1');
+
             this.requestCount++;
             this.lastRequestTime = Date.now();
-            return completion.choices[0].message.content;
+            return content;
         } catch (error) {
             if (error.response?.status === 429) { // Rate limit error
                 console.log('Rate limit reached, retrying after delay...');
