@@ -72,86 +72,49 @@ class OpenAIService {
     }
 
     async generateSEOContent(outline) {
-        const systemPrompt = `Bạn là một chuyên gia content writer, chuyên viết bài SEO cho website. 
-            Hãy viết một bài theo dàn ý với các yêu cầu sau:
-
-            1. Cấu trúc bài viết (800-1200 từ):
-            
-            [META]
-            - Tiêu đề (H1): Hấp dẫn, chứa từ khóa chính
-            - Meta description: 150-160 ký tự, thu hút click
-            
-            [INTRO]
-            - Mở đầu ấn tượng
-            - Giới thiệu vấn đề
-            - Tóm tắt những gì bài viết sẽ đề cập
-            - Chèn từ khóa chính tự nhiên
-            
-            [MAIN_CONTENT]
-            - Sử dụng H2, H3 từ dàn ý
-            - Mỗi phần 200-300 từ
-            - Ví dụ thực tế, số liệu cụ thể
-            - Sử dụng bullet points khi cần
-            - Đảm bảo dễ đọc, dễ hiểu
-            - Từ khóa phụ tự nhiên
-            
-            [CONCLUSION]
-            - Tóm tắt các điểm chính
-            - Kêu gọi hành động rõ ràng
-            - Gợi ý thêm tài nguyên liên quan
-            
-            2. Yêu cầu SEO:
-            - Từ khóa chính xuất hiện trong H1, meta
-            - Từ khóa phụ trong H2, H3
-            - Mật độ từ khóa 1-1.5%
-            - Câu ngắn gọn, rõ ràng
-            - Đoạn văn 2-4 câu
-
-            3. Tone giọng:
-            - Thân thiện, gần gũi
-            - Chuyên nghiệp
-            - Dễ hiểu với mọi đối tượng
-            
-            Output format:
-            ---META---
-            Title: [H1 title]
-            Description: [Meta description]
-
-            ---CONTENT---
-            <h1>[Title]</h1>
-
-            [Intro content]
-
-            <h2>[Main section 1]</h2>
-            [Content]
-
-            <h3>[Sub section]</h3>
-            [Content]
-
-            <h2>[Main section 2]</h2>
-            [Content]
-
-            [Conclusion]`;
-
         const formattedOutline = this.formatOutlineForPrompt(outline);
 
         try {
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4",
+                model: "o1-preview",
                 messages: [
-                    { role: "system", content: systemPrompt },
                     { 
                         role: "user", 
-                        content: `Hãy tạo bài viết chuẩn SEO từ dàn ý sau:\n${formattedOutline}` 
+                        content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
+                            Hãy tạo nội dung bài viết chuẩn SEO theo yêu dàn ý và cầu dưới đây.
+                            
+                            Yêu cầu về format:
+                            1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
+                            2. Sử dụng dấu xuống dòng (\n) trong danh sách (bullets)
+                            3. Tiêu đề phải cách nội dung 1 dòng
+                            4. Phần mới phải cách phần cũ 2 dòng
+                            5. Đảm bảo các phần được phân tách rõ ràng
+                            
+                            Yêu cầu về nội dung:
+                            - Chất lượng cao, mạch lạc và dễ hiểu
+                            - Đúng ngôn ngữ trong prompt
+                            - Phân chia các phần logic và rõ ràng
+                            
+                            Dàn ý chi tiết:
+                            ${formattedOutline}` 
                     }
                 ],
-                temperature: 0.7,
-                max_tokens: 4000,
-                presence_penalty: 0.1,
-                frequency_penalty: 0.1
+                max_completion_tokens: 24000
             });
 
-            return completion.choices[0].message.content;
+            // Format lại output để đảm bảo xuống dòng đúng
+            let content = completion.choices[0].message.content;
+            
+            // Đảm bảo xuống dòng sau tiêu đề
+            content = content.replace(/^(#+ .+)$/gm, '$1\n');
+            
+            // Đảm bảo 2 dòng trống giữa các phần
+            content = content.replace(/\n{3,}/g, '\n\n');
+            
+            // Đảm bảo bullets được xuống dòng đúng
+            content = content.replace(/^[•\-\*] (.+)$/gm, '\n• $1');
+
+            return content;
         } catch (error) {
             console.error('Error generating SEO content:', error);
             throw new Error('Failed to generate SEO content');

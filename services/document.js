@@ -126,6 +126,73 @@ class DocumentService {
         // Get main content
         const mainContent = content.replace(/---META---[\s\S]*?---CONTENT---/, '').trim();
 
+        const processContent = (text) => {
+            // Tách các phần bằng 2 dòng trống trở lên
+            const sections = text.split(/\n{2,}/);
+            
+            return sections.flatMap(section => {
+                const trimmedSection = section.trim();
+                if (!trimmedSection) return [];
+
+                // Xử lý các thẻ HTML h1, h2, h3
+                if (trimmedSection.match(/<h[123][^>]*>/i)) {
+                    const level = parseInt(trimmedSection.match(/<h([123])/i)[1]);
+                    const text = trimmedSection.replace(/<\/?h[123]>/gi, '').trim();
+                    return new docx.Paragraph({
+                        children: [
+                            new docx.TextRun({
+                                text: text,
+                                bold: true,
+                                size: 34 - (level * 2), // h1: 32, h2: 30, h3: 28
+                                color: '2E74B5'
+                            })
+                        ],
+                        spacing: { 
+                            before: 240 - (level * 40),
+                            after: 120 - (level * 20)
+                        }
+                    });
+                }
+
+                // Xử lý danh sách (bullet points)
+                if (trimmedSection.match(/^[•\-\*]/m)) {
+                    const listItems = trimmedSection.split(/\n/).filter(Boolean);
+                    return listItems.map(item => 
+                        new docx.Paragraph({
+                            children: [
+                                new docx.TextRun({
+                                    text: item.replace(/^[•\-\*]\s*/, ''),
+                                    size: 24
+                                })
+                            ],
+                            bullet: {
+                                level: 0
+                            },
+                            spacing: { before: 60, after: 60 }
+                        })
+                    );
+                }
+
+                // Đoạn văn bản thông thường
+                return new docx.Paragraph({
+                    children: [
+                        new docx.TextRun({
+                            text: trimmedSection,
+                            size: 24,
+                            font: 'Arial'
+                        })
+                    ],
+                    spacing: { 
+                        before: 120,
+                        after: 120,
+                        line: 360,
+                        lineRule: docx.LineRuleType.AUTO
+                    },
+                    alignment: docx.AlignmentType.JUSTIFIED
+                });
+            });
+        };
+
         const children = [
             // Meta Information Section
             new docx.Paragraph({
@@ -142,12 +209,7 @@ class DocumentService {
                     bottom: { style: 'single', size: 10, color: '7B2CBF' }
                 }
             }),
-            new docx.Paragraph({
-                children: [new docx.TextRun({ text: meta, size: 24 })],
-                spacing: { after: 400 }
-            }),
-
-            // Main Content Section
+            ...processContent(meta),
             new docx.Paragraph({
                 children: [
                     new docx.TextRun({
@@ -162,63 +224,8 @@ class DocumentService {
                     bottom: { style: 'single', size: 10, color: '2E74B5' }
                 }
             }),
+            ...processContent(mainContent)
         ];
-
-        // Process main content - convert HTML tags to styled paragraphs
-        const contentSections = mainContent.split(/(<h[1-3]>.*?<\/h[1-3]>)/g)
-            .filter(Boolean)
-            .map(section => {
-                if (section.startsWith('<h1>')) {
-                    return new docx.Paragraph({
-                        children: [
-                            new docx.TextRun({
-                                text: section.replace(/<\/?h1>/g, ''),
-                                bold: true,
-                                size: 32,
-                                color: '2E74B5'
-                            })
-                        ],
-                        spacing: { before: 240, after: 120 }
-                    });
-                } else if (section.startsWith('<h2>')) {
-                    return new docx.Paragraph({
-                        children: [
-                            new docx.TextRun({
-                                text: section.replace(/<\/?h2>/g, ''),
-                                bold: true,
-                                size: 28,
-                                color: '2E74B5'
-                            })
-                        ],
-                        spacing: { before: 200, after: 100 }
-                    });
-                } else if (section.startsWith('<h3>')) {
-                    return new docx.Paragraph({
-                        children: [
-                            new docx.TextRun({
-                                text: section.replace(/<\/?h3>/g, ''),
-                                bold: true,
-                                size: 26,
-                                color: '2E74B5'
-                            })
-                        ],
-                        spacing: { before: 160, after: 80 }
-                    });
-                } else {
-                    return new docx.Paragraph({
-                        children: [
-                            new docx.TextRun({
-                                text: section.trim(),
-                                size: 24
-                            })
-                        ],
-                        spacing: { before: 80, after: 80 },
-                        alignment: docx.AlignmentType.JUSTIFIED
-                    });
-                }
-            });
-
-        children.push(...contentSections);
 
         const doc = new docx.Document({
             styles: {
