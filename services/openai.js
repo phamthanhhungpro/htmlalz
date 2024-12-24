@@ -178,10 +178,7 @@ class OpenAIService {
                             ${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
                     }
                 ],
-                temperature: 0.7,
-                max_completion_tokens: 24000,
-                presence_penalty: 0.1,
-                frequency_penalty: 0.1
+                max_completion_tokens: 24000
             });
 
             this.requestCount++;
