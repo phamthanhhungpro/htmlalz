@@ -166,7 +166,7 @@ class OpenAIService {
 
         try {
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4",
+                model: "o1-preview",
                 messages: [
                     { 
                         role: "system", 
@@ -181,7 +181,7 @@ class OpenAIService {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 4000,
+                max_tokens: 16000,
                 presence_penalty: 0.1,
                 frequency_penalty: 0.1
             });
