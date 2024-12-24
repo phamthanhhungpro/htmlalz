@@ -119,22 +119,15 @@ class DocumentService {
     }
 
     async generateSEODocument(content) {
-        // Parse META section
-        const metaMatch = content.match(/---META---\s*([\s\S]*?)\s*---CONTENT---/);
-        const meta = metaMatch ? metaMatch[1] : '';
-        
-        // Get main content
-        const mainContent = content.replace(/---META---[\s\S]*?---CONTENT---/, '').trim();
-
+        // Use the same processContent function from generateMultipleContents
         const processContent = (text) => {
-            // Tách các phần bằng 2 dòng trống trở lên
             const sections = text.split(/\n{2,}/);
             
             return sections.flatMap(section => {
                 const trimmedSection = section.trim();
                 if (!trimmedSection) return [];
 
-                // Xử lý các thẻ HTML h1, h2, h3
+                // Handle headings
                 if (trimmedSection.match(/<h[123][^>]*>/i)) {
                     const level = parseInt(trimmedSection.match(/<h([123])/i)[1]);
                     const text = trimmedSection.replace(/<\/?h[123]>/gi, '').trim();
@@ -143,7 +136,7 @@ class DocumentService {
                             new docx.TextRun({
                                 text: text,
                                 bold: true,
-                                size: 34 - (level * 2), // h1: 32, h2: 30, h3: 28
+                                size: 34 - (level * 2),
                                 color: '2E74B5'
                             })
                         ],
@@ -154,7 +147,7 @@ class DocumentService {
                     });
                 }
 
-                // Xử lý danh sách (bullet points)
+                // Handle bullet points
                 if (trimmedSection.match(/^[•\-\*]/m)) {
                     const listItems = trimmedSection.split(/\n/).filter(Boolean);
                     return listItems.map(item => 
@@ -173,7 +166,7 @@ class DocumentService {
                     );
                 }
 
-                // Đoạn văn bản thông thường
+                // Regular paragraphs
                 return new docx.Paragraph({
                     children: [
                         new docx.TextRun({
@@ -194,37 +187,23 @@ class DocumentService {
         };
 
         const children = [
-            // Meta Information Section
+            // Title section
             new docx.Paragraph({
                 children: [
                     new docx.TextRun({
-                        text: "META INFORMATION",
+                        text: "NỘI DUNG BÀI VIẾT SEO",
                         bold: true,
-                        size: 28,
+                        size: 32,
                         color: '7B2CBF'
-                    })
-                ],
-                spacing: { after: 200 },
-                border: {
-                    bottom: { style: 'single', size: 10, color: '7B2CBF' }
-                }
-            }),
-            ...processContent(meta),
-            new docx.Paragraph({
-                children: [
-                    new docx.TextRun({
-                        text: "MAIN CONTENT",
-                        bold: true,
-                        size: 28,
-                        color: '2E74B5'
                     })
                 ],
                 spacing: { before: 400, after: 200 },
                 border: {
-                    bottom: { style: 'single', size: 10, color: '2E74B5' }
+                    bottom: { style: 'single', size: 10, color: '7B2CBF' }
                 }
             }),
-            ...processContent(mainContent)
+            // Process entire content
+            ...processContent(content)
         ];
 
         const doc = new docx.Document({
@@ -238,7 +217,11 @@ class DocumentService {
                             size: 24
                         },
                         paragraph: {
-                            spacing: { line: 360 }
+                            spacing: { 
+                                line: 360,
+                                before: 120,
+                                after: 120
+                            }
                         }
                     }
                 ]

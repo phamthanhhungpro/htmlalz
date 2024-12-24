@@ -20,7 +20,7 @@ class OpenAIService {
             6. Kết luận đầy đủ và sâu sắc cho mỗi phần chính
 
             Yêu cầu chi tiết:
-            - Mỗi phần chính cần tối thiểu 500 từ
+            - Mỗi phần chính cần tối thiểu 1000 từ
             - Sử dụng ngôn ngữ đối thoại, dễ hiểu nhưng chuyên sâu
             - Thêm nhiều ví dụ thực tế, câu chuyện minh họa
             - Đảm bảo nội dung mạch lạc và có tính liên kết cao
@@ -50,18 +50,14 @@ class OpenAIService {
 
         try {
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4",
+                model: "o1-preview",
                 messages: [
-                    { role: "system", content: systemPrompt },
                     { 
                         role: "user", 
-                        content: `Hãy tạo kịch bản video THẬT CHI TIẾT cho dàn ý sau, đảm bảo nội dung chuyên sâu:\n${formattedOutline}` 
+                        content: `${systemPrompt}:\n Dàn ý: ${formattedOutline}` 
                     }
                 ],
-                temperature: 0.8,
-                max_tokens: 4000, // Reduced max_tokens to stay within limits
-                presence_penalty: 0.2,
-                frequency_penalty: 0.3
+                max_completion_tokens: 24000
             });
 
             return completion.choices[0].message.content.trim();
@@ -81,7 +77,7 @@ class OpenAIService {
                     { 
                         role: "user", 
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
-                            Hãy tạo nội dung bài viết chuẩn SEO theo yêu dàn ý và cầu dưới đây.
+                            Hãy tạo nội dung bài viết chi tiết chuẩn SEO theo yêu dàn ý và cầu dưới đây.
                             
                             Yêu cầu về format:
                             1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
@@ -91,6 +87,7 @@ class OpenAIService {
                             5. Đảm bảo các phần được phân tách rõ ràng
                             
                             Yêu cầu về nội dung:
+                            - Đánh số thứ tự lại cho các phần chính
                             - Chất lượng cao, mạch lạc và dễ hiểu
                             - Đúng ngôn ngữ trong prompt
                             - Phân chia các phần logic và rõ ràng
