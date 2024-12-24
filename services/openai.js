@@ -20,7 +20,7 @@ class OpenAIService {
             6. Kết luận đầy đủ và sâu sắc cho mỗi phần chính
 
             Yêu cầu chi tiết:
-            - Mỗi phần chính cần tối thiểu 1000 từ
+            - Bài viết tối thiếu 5000 từ
             - Sử dụng ngôn ngữ đối thoại, dễ hiểu nhưng chuyên sâu
             - Thêm nhiều ví dụ thực tế, câu chuyện minh họa
             - Đảm bảo nội dung mạch lạc và có tính liên kết cao
@@ -87,6 +87,7 @@ class OpenAIService {
                             5. Đảm bảo các phần được phân tách rõ ràng
                             
                             Yêu cầu về nội dung:
+                            - Nội dung tối thiểu 4000 từ
                             - Đánh số thứ tự lại cho các phần chính
                             - Chất lượng cao, mạch lạc và dễ hiểu
                             - Đúng ngôn ngữ trong prompt
