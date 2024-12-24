@@ -8,8 +8,8 @@ class OpenAIService {
     }
 
     async generateVideoContent(outline) {
-        const userPrompt = `Tạo nội dung SEO chuẩn cho bài viết với dàn ý sau, tối thiểu 6000 từ. 
-                            Hãy chuyển đổi dàn ý sau thành một kịch bản video THẬT CHI TIẾT và hấp dẫn.
+        const userPrompt = `Hãy chuyển đổi dàn ý sau thành một kịch bản video THẬT CHI TIẾT và hấp dẫn.
+                            Tối thiểu 6000 từ.
                             Đánh lại số thứ tự các phần nếu cần thiết.`;
 
         const formattedOutline = this.formatOutlineForPrompt(outline);
@@ -57,7 +57,7 @@ class OpenAIService {
             content = content.replace(/^[•\-\*] (.+)$/gm, '\n• $1');
 
             return content;
-            
+
         } catch (error) {
             console.error('Error generating video content:', error);
             throw new Error('Failed to generate video content');
@@ -66,9 +66,12 @@ class OpenAIService {
 
     async generateSEOContent(outline) {
         const formattedOutline = this.formatOutlineForPrompt(outline);
-        const userPrompt = `Tạo nội dung SEO chuẩn cho bài viết với dàn ý sau, tối thiểu 4000 từ. 
-                            Viết lại nội dung theo cách mạch lạc, dễ hiểu và chuyên sâu nhất có thể.
-                            Đánh lại số thứ tự các phần nếu cần thiết.`;
+        const userPrompt = `Tạo nội dung chuẩn SEO cho bài viết với dàn ý sau, tối thiểu 6000 từ. 
+                            Viết lại nội dung theo cách mạch lạc, dễ hiểu và chuyên sâu nhất có thể. 
+                            Đánh lại số thứ tự các phần nếu cần thiết. Bài viết phải đáp ứng đầy đủ yêu cầu SEO.
+                            Đảm bảo sử dụng từ khóa chính và từ khóa liên quan một cách hợp lý.
+                            Đảm bảo hoàn hảo để copywriter có thể sử dụng nó mà không cần chỉnh sửa nhiều.`;
+
         try {
             const completion = await this.openai.chat.completions.create({
                 model: "o1-preview",
@@ -76,7 +79,7 @@ class OpenAIService {
                     { 
                         role: "user", 
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
-                            Hãy tạo nội dung theo yêu cầu dưới đây.
+                                  Hãy tạo nội dung theo yêu cầu dưới đây.
                             
                             Yêu cầu về format:
                             1. Sử dụng 2 dấu xuống dòng (\n\n) giữa các đoạn văn
