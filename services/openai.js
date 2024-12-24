@@ -173,7 +173,7 @@ class OpenAIService {
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
                             Hãy tạo nội dung dựa trên yêu cầu của người dùng.
                             Đảm bảo nội dung chất lượng, mạch lạc và dễ hiểu.
-                            Độ dài tối thiểu 1000 từ. Ngôn ngữ tương ứng với prompt.
+                            Ngôn ngữ tương ứng với prompt.
                             
                             ${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
                     }
