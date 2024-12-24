@@ -169,15 +169,13 @@ class OpenAIService {
                 model: "o1-preview",
                 messages: [
                     { 
-                        role: "system", 
+                        role: "user", 
                         content: `Bạn là một chuyên gia content writer chuyên nghiệp. 
                             Hãy tạo nội dung dựa trên yêu cầu của người dùng.
                             Đảm bảo nội dung chất lượng, mạch lạc và dễ hiểu.
-                            Độ dài tối thiểu 3000 từ. Ngôn ngữ tương ứng với prompt.` 
-                    },
-                    { 
-                        role: "user", 
-                        content: `${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
+                            Độ dài tối thiểu 1000 từ. Ngôn ngữ tương ứng với prompt.
+                            
+                            ${customPrompt}\n\nDàn ý:\n${formattedOutline}` 
                     }
                 ],
                 temperature: 0.7,
